@@ -52,3 +52,11 @@ The constructor initializes the contract with the following parameters:
 7. The contract owner can withdraw USDT and DAI tokens using the withdraw function.
 8. Anyone can check the total yield (USDT and DAI token balances) using the
    calculateYield function.
+
+## Block Diagram
+
+![The Diagram](Treasury.drawio.png)
+
+## Deployment
+
+The contract is deployed on the Polygon Mumbai Testnet. The deployment [can be found here](https://mumbai.polygonscan.com/address/0x60C4e73688E8dF0469be84E6ee82aF9c16D71aA8)
