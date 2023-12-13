@@ -3,8 +3,14 @@ pragma solidity ^0.8.20;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+// import {ILendingPool} from "@aave/protocol-v2/contracts/interfaces/ILendingPool.sol";
 
 contract Treasury {
+    error Treasury__NotOwner();
+    error Treasury__USDCTransferFail();
+    error Treasury__InsufficientUSDCBalance();
+    error Treasury__AllocationRatiosShouldAddUpTo100();
+
     address private owner;
     address private usdcTokenAddress; // USDC token contract address
     address private usdtTokenAddress; // USDT token contract address
@@ -36,7 +42,9 @@ contract Treasury {
 
     // Modifier to ensure only the owner can call certain functions
     modifier onlyOwner() {
-        require(msg.sender == owner, "Only the contract owner can call this function");
+        if (msg.sender != owner) {
+            revert Treasury__NotOwner();
+        }
         _;
     }
 
@@ -44,16 +52,25 @@ contract Treasury {
     function deposit(uint256 amount) external {
         IERC20 usdcToken = IERC20(usdcTokenAddress);
 
-        require(usdcToken.transferFrom(msg.sender, address(this), amount), "Failed to transfer USDC");
+        // require(usdcToken.transferFrom(msg.sender, address(this), amount), "Failed to transfer USDC");
+        if (!usdcToken.transferFrom(msg.sender, address(this), amount)) {
+            revert Treasury__USDCTransferFail();
+        }
         emit Deposit(msg.sender, amount);
     }
 
     // Withdraw funds from the treasury contract
     function withdraw(uint256 amount) external onlyOwner {
         IERC20 usdcToken = IERC20(usdcTokenAddress);
-        require(usdcToken.balanceOf(address(this)) >= amount, "Insufficient USDC balance");
+        // require(usdcToken.balanceOf(address(this)) >= amount, "Insufficient USDC balance");
+        if (usdcToken.balanceOf(address(this)) < amount) {
+            revert Treasury__InsufficientUSDCBalance();
+        }
 
-        require(usdcToken.transfer(msg.sender, amount), "Failed to transfer USDC");
+        // require(usdcToken.transfer(msg.sender, amount), "Failed to transfer USDC");
+        if (!usdcToken.transfer(msg.sender, amount)) {
+            revert Treasury__USDCTransferFail();
+        }
         emit Withdrawal(msg.sender, amount);
     }
 
@@ -63,10 +80,13 @@ contract Treasury {
         uint256 _usdtAllocationRatio,
         uint256 _daiAllocationRatio
     ) external onlyOwner {
-        require(
-            _usdcAllocationRatio + _usdtAllocationRatio + _daiAllocationRatio == 100,
-            "Allocation ratios must add up to 100"
-        );
+        // require(
+        //     _usdcAllocationRatio + _usdtAllocationRatio + _daiAllocationRatio == 100,
+        //     "Allocation ratios must add up to 100"
+        // );
+        if (_usdcAllocationRatio + _usdtAllocationRatio + _daiAllocationRatio != 100) {
+            revert Treasury__AllocationRatiosShouldAddUpTo100();
+        }
 
         usdcAllocationRatio = _usdcAllocationRatio;
         usdtAllocationRatio = _usdtAllocationRatio;
