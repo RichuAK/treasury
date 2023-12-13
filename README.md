@@ -1,66 +1,54 @@
-## Foundry
+# Treasury
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+A treasury contract that helps interact with other DeFi protocols.
 
-Foundry consists of:
+The Treasury smart contract is designed to manage funds by depositing USDC tokens into
+Uniswap and Aave protocols. The deposited funds are then swapped for USDT and DAI
+tokens, respectively. The contract allows the owner to set the distribution ratios for Uniswap
+and Aave, deposit funds, withdraw funds, and calculate the yield.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Constructor
 
-## Documentation
+The constructor initializes the contract with the following parameters:
 
-https://book.getfoundry.sh/
+- \_uniswapRouter: Address of the Uniswap V2 Router
 
-## Usage
+- \_aaveLendingPool: Address of the Aave Lending Pool
 
-### Build
+- \_usdcToken: Address of the USDC token
+- \_
+  usdtToken: Address of the USDT token
+- \_
+  daiToken: Address of the DAI token
+  These addresses are
 
-```shell
-$ forge build
-```
+## Functions
 
-### Test
+1. setRatios: Allows the contract owner to set the distribution ratios for Uniswap and Aave.
+   The sum of both ratios must equal 100. This function ensures that the total allocation of
+   funds is always 100%, preventing any loss or mismanagement of funds.
 
-```shell
-$ forge test
-```
+2. deposit: Accepts an amount of USDC tokens from the sender, calculates the distribution
+   amounts based on the set ratios, and deposits the funds into Uniswap and Aave. The USDC
+   tokens are then swapped for USDT and DAI tokens, respectively.
 
-### Format
+3. withdraw: Allows the contract owner to withdraw a specified amount of USDT and DAI
+   tokens based on the set ratios. This function ensures that the owner can retrieve their funds
+   when needed.
 
-```shell
-$ forge fmt
-```
+4. calculateYield: Returns the total balance of USDT and DAI tokens held by the contract. This
+   function allows the owner to monitor the performance of their investments.
 
-### Gas Snapshots
+## Flow of Interaction
 
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+1. The owner deploys the contract with all the interacting addresses passed into the constructor.
+2. The contract owner sets the distribution ratios for Uniswap and Aave using the setRatios
+   function.
+3. Users deposit USDC tokens into the Treasury smart contract using the deposit function.
+4. The deposited USDC tokens are split based on the set ratios and sent to Uniswap and
+   Aave.
+5. In Uniswap, USDC tokens are swapped for USDT tokens.
+6. In Aave, USDC tokens are deposited and swapped for DAI tokens.
+7. The contract owner can withdraw USDT and DAI tokens using the withdraw function.
+8. Anyone can check the total yield (USDT and DAI token balances) using the
+   calculateYield function.
